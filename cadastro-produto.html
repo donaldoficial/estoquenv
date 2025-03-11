@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Produto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-center">Cadastro de Produto</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="form-cadastro-produto">
+                            <div class="mb-3">
+                                <label for="nome-produto" class="form-label">Nome do Produto</label>
+                                <input type="text" class="form-control" id="nome-produto" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="tipo-produto" class="form-label">Tipo</label>
+                                <select class="form-control" id="tipo-produto" required>
+                                    <option value="unidade">Unidade</option>
+                                    <option value="kilo">Kilo</option>
+                                    <option value="litro">Litro</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="empresa-produto" class="form-label">Empresa</label>
+                                <select class="form-control" id="empresa-produto" required>
+                                    <!-- Opções de empresas serão preenchidas via JavaScript -->
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
+                        </form>
+                        <p class="text-success mt-3" id="produto-message"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Preenche as opções de empresas
+        const empresas = JSON.parse(localStorage.getItem('empresas')) || [];
+        const selectEmpresas = document.getElementById('empresa-produto');
+        empresas.forEach(empresa => {
+            const option = document.createElement('option');
+            option.value = empresa.codigo;
+            option.textContent = empresa.nome;
+            selectEmpresas.appendChild(option);
+        });
+
+        // Cadastro de produto
+        document.getElementById('form-cadastro-produto').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const nome = document.getElementById('nome-produto').value;
+            const tipo = document.getElementById('tipo-produto').value;
+            const empresaCodigo = document.getElementById('empresa-produto').value;
+
+            // Recupera produtos do localStorage
+            const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+
+            // Adiciona o novo produto
+            produtos.push({ nome, tipo, empresaCodigo });
+            localStorage.setItem('produtos', JSON.stringify(produtos));
+
+            // Exibe mensagem de sucesso
+            document.getElementById('produto-message').textContent = 'Produto cadastrado com sucesso! Redirecionando...';
+            document.getElementById('produto-message').classList.remove('text-danger');
+            document.getElementById('produto-message').classList.add('text-success');
+
+            // Redireciona para a tela de estoque após 2 segundos
+            setTimeout(() => {
+                window.location.href = 'estoque.html';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

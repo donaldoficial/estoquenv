@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saída de Nota</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Menu Lateral -->
+    <div class="menu-lateral">
+        <button class="btn btn-primary" onclick="toggleMenu()">☰</button>
+        <div id="menu-conteudo" class="menu-conteudo">
+            <a href="cadastro-empresa.html">Cadastrar Empresa</a>
+            <a href="cadastro-produto.html">Cadastrar Produto</a>
+            <a href="enderecamento.html">Endereçamento</a>
+            <a href="movimentacao.html">Movimentação</a>
+            <a href="conferencia.html">Conferência</a>
+            <a href="entrada-nota.html">Entrada de Nota</a>
+            <a href="saida-nota.html">Saída de Nota</a>
+            <a href="gerenciar-produtos.html">Gerenciar Produtos</a>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="container mt-5">
+        <h1>Saída de Nota</h1>
+        <a href="estoque.html" class="btn btn-secondary mb-3">Voltar</a>
+        <form id="form-saida-nota">
+            <div class="mb-3">
+                <label for="numero-nota" class="form-label">Número da Nota</label>
+                <input type="text" class="form-control" id="numero-nota" required>
+            </div>
+
+            <!-- Itens da Nota -->
+            <div id="itens-nota">
+                <div class="item-nota mb-4">
+                    <div class="mb-3">
+                        <label class="form-label">Empresa</label>
+                        <select class="form-control empresa" required>
+                            <option value="">Selecione uma empresa</option>
+                            <!-- Opções de empresas serão preenchidas via JavaScript -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Produto</label>
+                        <select class="form-control produto" required>
+                            <option value="">Selecione um produto</option>
+                            <!-- Opções de produtos serão preenchidas via JavaScript -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantidade</label>
+                        <input type="number" class="form-control quantidade" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo</label>
+                        <select class="form-control tipo-produto" required>
+                            <option value="unidade">Unidade</option>
+                            <option value="kilo">Kilo</option>
+                            <option value="litro">Litro</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Endereço (Vaga)</label>
+                        <input type="text" class="form-control endereco" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Registrar Saída</button>
+        </form>
+        <p class="text-success mt-3" id="saida-message"></p>
+    </div>
+
+    <script>
+        // Preenche as opções de empresas e produtos
+        const empresas = JSON.parse(localStorage.getItem('empresas')) || [];
+        const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+
+        // Função para preencher os selects de empresa e produto
+        function preencherSelects(container) {
+            const selectEmpresa = container.querySelector('.empresa');
+            const selectProduto = container.querySelector('.produto');
+
+            // Preenche empresas
+            selectEmpresa.innerHTML = '<option value="">Selecione uma empresa</option>';
+            empresas.forEach(empresa => {
+                const option = document.createElement('option');
+                option.value = empresa.codigo;
+                option.textContent = empresa.nome;
+                selectEmpresa.appendChild(option);
+            });
+
+            // Preenche produtos
+            selectProduto.innerHTML = '<option value="">Selecione um produto</option>';
+            produtos.forEach(produto => {
+                const option = document.createElement('option');
+                option.value = produto.codigo;
+                option.textContent = produto.nome;
+                selectProduto.appendChild(option);
+            });
+        }
+
+        // Função para preencher o endereço automaticamente
+        function preencherEndereco(produtoSelect, enderecoInput) {
+            const produtoCodigo = produtoSelect.value;
+            const produto = produtos.find(p => p.codigo === produtoCodigo);
+            if (produto && produto.endereco) {
+                enderecoInput.value = produto.endereco;
+            } else {
+                enderecoInput.value = '';
+            }
+        }
+
+        // Função para registrar a saída da nota
+        document.getElementById('form-saida-nota').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const numeroNota = document.getElementById('numero-nota').value;
+            const itensNota = document.querySelectorAll('.item-nota');
+            const produtosAtualizados = JSON.parse(localStorage.getItem('produtos')) || [];
+            const saidas = [];
+
+            // Verifica se há itens na nota
+            if (itensNota.length === 0) {
+                alert('Adicione pelo menos um item à nota.');
+                return;
+            }
+
+            // Processa cada item da nota
+            itensNota.forEach(item => {
+                const empresaCodigo = item.querySelector('.empresa').value;
+                const produtoCodigo = item.querySelector('.produto').value;
+                const produtoNome = produtos.find(p => p.codigo === produtoCodigo)?.nome;
+                const quantidade = parseInt(item.querySelector('.quantidade').value);
+                const tipo = item.querySelector('.tipo-produto').value;
+                const endereco = item.querySelector('.endereco').value;
+
+                if (produtoCodigo && quantidade) {
+                    // Atualiza o estoque do produto
+                    const produtoIndex = produtosAtualizados.findIndex(p => p.codigo === produtoCodigo);
+                    if (produtoIndex !== -1) {
+                        const produto = produtosAtualizados[produtoIndex];
+                        if (produto.quantidade >= quantidade) {
+                            produto.quantidade -= quantidade;
+                        } else {
+                            alert(`Quantidade indisponível para o produto ${produtoNome}.`);
+                            return;
+                        }
+                    }
+
+                    // Adiciona a saída
+                    saidas.push({
+                        numeroNota,
+                        empresaCodigo,
+                        produto: produtoNome,
+                        quantidade,
+                        tipo,
+                        endereco,
+                        data: new Date().toLocaleString('pt-BR') // Data e hora no formato brasileiro
+                    });
+                }
+            });
+
+            // Salva as saídas e os produtos atualizados no localStorage
+            const saidasExistentes = JSON.parse(localStorage.getItem('saidas')) || [];
+            localStorage.setItem('saidas', JSON.stringify([...saidasExistentes, ...saidas]));
+            localStorage.setItem('produtos', JSON.stringify(produtosAtualizados));
+
+            alert('Saída de nota registrada com sucesso!');
+            window.location.href = 'estoque.html'; // Redireciona para a página de estoque
+        });
+
+        // Preenche os selects do primeiro item ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            const primeiroItem = document.querySelector('.item-nota');
+            if (primeiroItem) {
+                preencherSelects(primeiroItem);
+
+                // Adiciona evento para preencher o endereço automaticamente
+                const produtoSelect = primeiroItem.querySelector('.produto');
+                const enderecoInput = primeiroItem.querySelector('.endereco');
+                produtoSelect.addEventListener('change', () => {
+                    preencherEndereco(produtoSelect, enderecoInput);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

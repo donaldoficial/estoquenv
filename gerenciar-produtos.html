@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Produtos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Menu Lateral -->
+    <div class="menu-lateral">
+        <button class="btn btn-primary" onclick="toggleMenu()">☰</button>
+        <div id="menu-conteudo" class="menu-conteudo">
+            <a href="cadastro-empresa.html">Cadastrar Empresa</a>
+            <a href="cadastro-produto.html">Cadastrar Produto</a>
+            <a href="enderecamento.html">Endereçamento</a>
+            <a href="movimentacao.html">Movimentação</a>
+            <a href="conferencia.html">Conferência</a>
+            <a href="entrada-nota.html">Entrada de Nota</a>
+            <a href="saida-nota.html">Saída de Nota</a>
+            <a href="gerenciar-produtos.html">Gerenciar Produtos</a>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="container mt-5">
+        <h1>Gerenciar Produtos</h1>
+        <a href="estoque.html" class="btn btn-secondary mb-3">Voltar</a>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Empresa</th>
+                    <th>Endereço</th>
+                    <th>Quantidade</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-produtos"></tbody>
+        </table>
+    </div>
+
+    <script src="scripts.js"></script>
+    <script>
+        // Carrega os produtos ao abrir a página
+        function carregarProdutos() {
+            const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+            const empresas = JSON.parse(localStorage.getItem('empresas')) || [];
+            const tabelaProdutos = document.getElementById('tabela-produtos');
+            tabelaProdutos.innerHTML = '';
+
+            produtos.forEach((produto, index) => {
+                const empresa = empresas.find(e => e.codigo === produto.empresaCodigo);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${produto.nome}</td>
+                    <td>${produto.tipo}</td>
+                    <td>${empresa ? empresa.nome : 'N/A'}</td>
+                    <td>${produto.endereco || 'N/A'}</td>
+                    <td>${produto.quantidade || 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editarProduto(${index})">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="excluirProduto(${index})">Excluir</button>
+                    </td>
+                `;
+                tabelaProdutos.appendChild(row);
+            });
+        }
+
+        // Função para editar um produto
+        function editarProduto(index) {
+            const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+            const produto = produtos[index];
+            const novoNome = prompt('Novo nome do produto:', produto.nome);
+            if (novoNome) {
+                produto.nome = novoNome;
+                localStorage.setItem('produtos', JSON.stringify(produtos));
+                carregarProdutos();
+            }
+        }
+
+        // Função para excluir um produto
+        function excluirProduto(index) {
+            const confirmacao = confirm('Tem certeza que deseja excluir este produto?');
+            if (confirmacao) {
+                const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+                produtos.splice(index, 1);
+                localStorage.setItem('produtos', JSON.stringify(produtos));
+                carregarProdutos();
+            }
+        }
+
+        // Carrega os produtos ao abrir a página
+        carregarProdutos();
+    </script>
+</body>
+</html>

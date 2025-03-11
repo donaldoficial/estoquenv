@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movimentação de Produtos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Biblioteca para gerar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <!-- Menu Lateral -->
+    <div class="menu-lateral">
+        <button class="btn btn-primary" onclick="toggleMenu()">☰</button>
+        <div id="menu-conteudo" class="menu-conteudo">
+            <a href="cadastro-empresa.html">Cadastrar Empresa</a>
+            <a href="cadastro-produto.html">Cadastrar Produto</a>
+            <a href="enderecamento.html">Endereçamento</a>
+            <a href="movimentacao.html">Movimentação</a>
+            <a href="conferencia.html">Conferência</a>
+            <a href="entrada-nota.html">Entrada de Nota</a>
+            <a href="saida-nota.html">Saída de Nota</a>
+            <a href="gerenciar-produtos.html">Gerenciar Produtos</a>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div class="container mt-5">
+        <h1>Movimentação de Produtos</h1>
+        <form id="form-movimentacao">
+            <div class="mb-3">
+                <label for="empresa" class="form-label">Empresa</label>
+                <select class="form-control" id="empresa" required>
+                    <option value="">Selecione uma empresa</option>
+                    <!-- Opções de empresas serão preenchidas via JavaScript -->
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="produto" class="form-label">Produto</label>
+                <select class="form-control" id="produto">
+                    <option value="">Selecione um produto (opcional)</option>
+                    <!-- Opções de produtos serão preenchidas via JavaScript -->
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="tipo-movimentacao" class="form-label">Tipo de Movimentação</label>
+                <select class="form-control" id="tipo-movimentacao" required>
+                    <option value="entrada">Entrada</option>
+                    <option value="saida">Saída</option>
+                    <option value="todos">Todos</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Filtrar Movimentação</button>
+        </form>
+
+        <!-- Botão para gerar PDF -->
+        <button class="btn btn-success mt-3" onclick="gerarPDF()">Gerar PDF</button>
+
+        <!-- Tabela de Movimentações -->
+        <h2 class="mt-5">Lista de Movimentações</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nota</th>
+                    <th>Empresa</th>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Estoque Após Movimentação</th>
+                    <th>Data e Hora</th>
+                    <th>Tipo</th>
+                    <th>Ações</th> <!-- Coluna para ações (remover) -->
+                </tr>
+            </thead>
+            <tbody id="tabela-movimentacoes"></tbody>
+        </table>
+    </div>
+
+    <script src="scripts.js"></script>
+    <script>
+        // Preenche as opções de empresas
+        const empresas = JSON.parse(localStorage.getItem('empresas')) || [];
+        const selectEmpresas = document.getElementById('empresa');
+        empresas.forEach(empresa => {
+            const option = document.createElement('option');
+            option.value = empresa.codigo;
+            option.textContent = empresa.nome;
+            selectEmpresas.appendChild(option);
+        });
+
+        // Preenche as opções de produtos
+        const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+        const selectProdutos = document.getElementById('produto');
+        produtos.forEach(produto => {
+            const option = document.createElement('option');
+            option.value = produto.nome;
+            option.textContent = produto.nome;
+            selectProdutos.appendChild(option);
+        });
+
+        // Função para calcular o estoque após cada movimentação
+        function calcularEstoqueAposMovimentacao(movimentacoes) {
+            const estoquePorProduto = {};
+
+            movimentacoes.forEach(movimentacao => {
+                if (!estoquePorProduto[movimentacao.produto]) {
+                    estoquePorProduto[movimentacao.produto] = 0;
+                }
+
+                if (movimentacao.tipo === 'entrada') {
+                    estoquePorProduto[movimentacao.produto] += parseInt(movimentacao.quantidade);
+                } else if (movimentacao.tipo === 'saida') {
+                    estoquePorProduto[movimentacao.produto] -= parseInt(movimentacao.quantidade);
+                }
+
+                movimentacao.estoqueAposMovimentacao = estoquePorProduto[movimentacao.produto];
+            });
+
+            return movimentacoes;
+        }
+
+        // Função para carregar as movimentações
+        function carregarMovimentacoes(empresaCodigo, produtoNome, tipo) {
+            const entradas = JSON.parse(localStorage.getItem('entradas')) || [];
+            const saidas = JSON.parse(localStorage.getItem('saidas')) || [];
+            const empresas = JSON.parse(localStorage.getItem('empresas')) || [];
+            const tabelaMovimentacoes = document.getElementById('tabela-movimentacoes');
+            tabelaMovimentacoes.innerHTML = '';
+
+            let movimentacoes = [];
+
+            if (tipo === 'entrada') {
+                movimentacoes = entradas.map(entrada => ({ ...entrada, tipo: 'entrada' }));
+            } else if (tipo === 'saida') {
+                movimentacoes = saidas.map(saida => ({ ...saida, tipo: 'saida' }));
+            } else if (tipo === 'todos') {
+                movimentacoes = [
+                    ...entradas.map(entrada => ({ ...entrada, tipo: 'entrada' })),
+                    ...saidas.map(saida => ({ ...saida, tipo: 'saida' }))
+                ];
+            }
+
+            // Filtra por empresa e produto
+            if (empresaCodigo) {
+                movimentacoes = movimentacoes.filter(movimentacao => movimentacao.empresaCodigo === empresaCodigo);
+            }
+            if (produtoNome) {
+                movimentacoes = movimentacoes.filter(movimentacao => movimentacao.produto === produtoNome);
+            }
+
+            // Ordena as movimentações por data
+            movimentacoes.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+            // Calcula o estoque após cada movimentação
+            movimentacoes = calcularEstoqueAposMovimentacao(movimentacoes);
+
+            // Exibe as movimentações filtradas
+            movimentacoes.forEach((movimentacao, index) => {
+                const empresa = empresas.find(e => e.codigo === movimentacao.empresaCodigo);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${movimentacao.numeroNota || 'N/A'}</td>
+                    <td>${empresa ? empresa.nome : 'Empresa não encontrada'}</td>
+                    <td>${movimentacao.produto}</td>
+                    <td>${movimentacao.quantidade}</td>
+                    <td>${movimentacao.estoqueAposMovimentacao}</td>
+                    <td>${movimentacao.data}</td>
+                    <td>${movimentacao.tipo === 'entrada' ? 'Entrada' : 'Saída'}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="removerMovimentacao(${index}, '${movimentacao.tipo}')">Remover</button>
+                    </td>
+                `;
+                tabelaMovimentacoes.appendChild(row);
+            });
+        }
+
+        // Função para remover uma movimentação
+        function removerMovimentacao(index, tipo) {
+            let movimentacoes = [];
+            if (tipo === 'entrada') {
+                movimentacoes = JSON.parse(localStorage.getItem('entradas')) || [];
+                movimentacoes.splice(index, 1); // Remove o item pelo índice
+                localStorage.setItem('entradas', JSON.stringify(movimentacoes));
+            } else if (tipo === 'saida') {
+                movimentacoes = JSON.parse(localStorage.getItem('saidas')) || [];
+                movimentacoes.splice(index, 1); // Remove o item pelo índice
+                localStorage.setItem('saidas', JSON.stringify(movimentacoes));
+            }
+
+            // Recarrega a tabela de movimentações
+            const empresaCodigo = document.getElementById('empresa').value;
+            const produtoNome = document.getElementById('produto').value;
+            const tipoMovimentacao = document.getElementById('tipo-movimentacao').value;
+            carregarMovimentacoes(empresaCodigo, produtoNome, tipoMovimentacao);
+
+            alert('Movimentação removida com sucesso!');
+        }
+
+        // Carrega todas as movimentações ao abrir a página
+        carregarMovimentacoes('', '', 'todos');
+
+        // Filtra as movimentações
+        document.getElementById('form-movimentacao').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const empresaCodigo = document.getElementById('empresa').value;
+            const produtoNome = document.getElementById('produto').value;
+            const tipo = document.getElementById('tipo-movimentacao').value;
+            carregarMovimentacoes(empresaCodigo, produtoNome, tipo);
+        });
+
+        // Função para gerar PDF
+        function gerarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Cabeçalho do PDF
+            doc.setFontSize(18);
+            doc.text("Relatório de Movimentações", 10, 10);
+
+            // Dados da tabela
+            const headers = [["Nota", "Empresa", "Produto", "Quantidade", "Estoque Após Movimentação", "Data e Hora", "Tipo"]];
+            const rows = [];
+
+            const movimentacoes = document.querySelectorAll("#tabela-movimentacoes tr");
+            movimentacoes.forEach(row => {
+                const cells = row.querySelectorAll("td");
+                const rowData = [];
+                cells.forEach(cell => rowData.push(cell.textContent));
+                rows.push(rowData);
+            });
+
+            // Adiciona a tabela ao PDF
+            doc.autoTable({
+                head: headers,
+                body: rows,
+                startY: 20,
+            });
+
+            // Salva o PDF
+            doc.save("movimentacoes.pdf");
+        }
+
+        // Função para alternar o menu lateral
+        function toggleMenu() {
+            const menu = document.getElementById('menu-conteudo');
+            menu.classList.toggle('menu-aberto');
+        }
+    </script>
+</body>
+</html>

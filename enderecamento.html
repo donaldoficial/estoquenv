@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endereçamento</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilo para o botão de voltar */
+        .btn-voltar {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn-voltar:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-voltar:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilo para as vagas */
+        .vaga-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .vaga-card {
+            flex: 1 1 calc(25% - 15px); /* 4 colunas por linha */
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .vaga-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .vaga-card h5 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .vaga-card p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* Cores das vagas por andar */
+        .vaga-card[data-andar="baixo"] {
+            background-color: #f0f8ff; /* Azul claro */
+        }
+
+        .vaga-card[data-andar="cima"] {
+            background-color: #fff0f5; /* Rosa claro */
+        }
+
+        /* Layout dos andares */
+        .andar-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .andar-container h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Endereçamento</h1>
+        <!-- Botão de Voltar Moderno -->
+        <button class="btn-voltar" onclick="navegarPara('estoque.html')">
+            <i class="fas fa-arrow-left"></i>
+            Voltar
+        </button>
+
+        <!-- Vagas Disponíveis -->
+        <div class="mt-4">
+            <h3>Vagas Disponíveis</h3>
+            <div class="vaga-container">
+                <!-- Andar de Baixo (A1-A20) -->
+                <div class="andar-container">
+                    <h3>Andar de Baixo (A1-A20)</h3>
+                    <div id="andar-baixo" class="row"></div>
+                </div>
+
+                <!-- Andar de Cima (B1-B20) -->
+                <div class="andar-container">
+                    <h3>Andar de Cima (B1-B20)</h3>
+                    <div id="andar-cima" class="row"></div>
+                </div>
+
+                <!-- Andar de Baixo (C1-C20) -->
+                <div class="andar-container">
+                    <h3>Andar de Baixo (C1-C20)</h3>
+                    <div id="andar-baixo-2" class="row"></div>
+                </div>
+
+                <!-- Andar de Cima (D1-D20) -->
+                <div class="andar-container">
+                    <h3>Andar de Cima (D1-D20)</h3>
+                    <div id="andar-cima-2" class="row"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para navegar entre as páginas
+        function navegarPara(pagina) {
+            window.location.href = pagina;
+        }
+
+        // Função para gerar as vagas
+        function gerarVagas() {
+            const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+            const empresas = JSON.parse(localStorage.getItem('empresas')) || [];
+
+            const letras = ['A', 'B', 'C', 'D'];
+            letras.forEach((letra, index) => {
+                const andar = index % 2 === 0 ? 'baixo' : 'cima'; // Alterna entre andar de baixo e cima
+                const containerId = andar === 'baixo' && index < 2 ? 'andar-baixo' :
+                                    andar === 'cima' && index < 2 ? 'andar-cima' :
+                                    andar === 'baixo' ? 'andar-baixo-2' : 'andar-cima-2';
+
+                const container = document.getElementById(containerId);
+
+                for (let i = 1; i <= 20; i++) {
+                    const vaga = `${letra}${i}`;
+                    const produtosNaVaga = produtos.filter(p => p.endereco === vaga);
+
+                    const vagaDiv = document.createElement('div');
+                    vagaDiv.className = 'col-md-3 mb-3';
+                    vagaDiv.innerHTML = `
+                        <div class="vaga-card" data-andar="${andar}">
+                            <h5>Vaga ${vaga}</h5>
+                            <p>
+                                ${produtosNaVaga.length > 0 ?
+                                    produtosNaVaga.map(produto => {
+                                        const empresa = empresas.find(e => e.codigo === produto.empresaCodigo);
+                                        return `
+                                            Produto: ${produto.nome}<br>
+                                            Quantidade: ${produto.quantidade}<br>
+                                            Empresa: ${empresa ? empresa.nome : 'N/A'}<br><br>
+                                        `;
+                                    }).join('')
+                                    : 'Vaga disponível'
+                                }
+                            </p>
+                        </div>
+                    `;
+                    container.appendChild(vagaDiv);
+                }
+            });
+        }
+
+        // Carrega as vagas ao abrir a página
+        gerarVagas();
+    </script>
+</body>
+</html>
