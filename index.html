@@ -5,7 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login e Cadastro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilo para o card do formulário */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Estilo para o formulário */
+        #form-login .form-control {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #form-login .form-control:focus {
+            border-color: #6a11cb;
+            box-shadow: 0 0 5px rgba(106, 17, 203, 0.5);
+        }
+
+        #form-login .btn-primary {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #form-login .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #form-login .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilo para o botão de cadastro */
+        .btn-link {
+            color: #6a11cb;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .btn-link:hover {
+            color: #2575fc;
+        }
+
+        /* Mensagem de erro */
+        #login-message {
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 15px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
@@ -26,9 +103,9 @@
                                 <input type="password" class="form-control" id="login-password" required>
                             </div>
                             <button type="submit" class="btn btn-primary w-100">Login</button>
+                            <a href="cadastro-usuario.html" class="btn btn-link w-100 mt-3">Cadastrar</a>
+                            <p class="text-danger mt-3" id="login-message"></p>
                         </form>
-                        <a href="cadastro-usuario.html" class="btn btn-link w-100 mt-3">Cadastrar</a>
-                        <p class="text-danger mt-3" id="login-message"></p>
                     </div>
                 </div>
             </div>
@@ -43,8 +120,15 @@
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
 
-            // Verifica se o usuário e senha estão corretos (exemplo simples)
+            // Verifica se o usuário e senha estão corretos
             const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+
+            // Adiciona um usuário padrão (usuário: 1, senha: 1) se não existir
+            if (usuarios.length === 0) {
+                usuarios.push({ username: '1', password: '1' });
+                localStorage.setItem('usuarios', JSON.stringify(usuarios));
+            }
+
             const usuario = usuarios.find(u => u.username === username && u.password === password);
 
             if (usuario) {
