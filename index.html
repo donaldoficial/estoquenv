@@ -141,6 +141,17 @@
                 document.getElementById('login-message').textContent = 'Usuário ou senha incorretos.';
             }
         });
+
+        // Verifica se já existe um usuário padrão ao carregar a página
+        document.addEventListener('DOMContentLoaded', function () {
+            const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+
+            // Adiciona o usuário padrão se não existir
+            if (usuarios.length === 0) {
+                usuarios.push({ username: '1', password: '1' });
+                localStorage.setItem('usuarios', JSON.stringify(usuarios));
+            }
+        });
     </script>
 </body>
 </html>
