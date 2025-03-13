@@ -20,6 +20,7 @@ app.post('/login', (req, res) => {
     // Lê o arquivo JSON
     fs.readFile(dadosPath, 'utf8', (err, data) => {
         if (err) {
+            console.error('Erro ao ler o arquivo de dados:', err);
             return res.status(500).json({ success: false, message: 'Erro ao ler o arquivo de dados.' });
         }
 
@@ -41,6 +42,7 @@ app.post('/cadastrar', (req, res) => {
     // Lê o arquivo JSON
     fs.readFile(dadosPath, 'utf8', (err, data) => {
         if (err) {
+            console.error('Erro ao ler o arquivo de dados:', err);
             return res.status(500).json({ success: false, message: 'Erro ao ler o arquivo de dados.' });
         }
 
@@ -58,6 +60,7 @@ app.post('/cadastrar', (req, res) => {
         // Salva o arquivo JSON atualizado
         fs.writeFile(dadosPath, JSON.stringify(dados, null, 2), (err) => {
             if (err) {
+                console.error('Erro ao salvar o arquivo de dados:', err);
                 return res.status(500).json({ success: false, message: 'Erro ao salvar o arquivo de dados.' });
             }
             res.json({ success: true, message: 'Usuário cadastrado com sucesso!' });
