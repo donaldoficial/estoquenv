@@ -36,8 +36,12 @@
             background: linear-gradient(135deg, #6a11cb, #2575fc);
         }
 
-        .btn-voltar {
+        .btn-cadastrar-produto {
             background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        }
+
+        .btn-voltar {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
         }
 
         /* Centralizar os botões na página */
@@ -61,12 +65,18 @@
 <body>
     <div class="container">
         <!-- Título da Página -->
-        <h1 class="titulo">Cadastro de Empresa</h1>
+        <h1 class="titulo">Cadastro</h1>
 
         <!-- Botão Cadastrar Empresa -->
         <button class="btn-navegacao btn-cadastrar-empresa" onclick="navegarPara('cadastroempresaofc.html')">
             <i class="fas fa-building"></i>
             Cadastrar Empresa
+        </button>
+
+        <!-- Botão Cadastrar Produto -->
+        <button class="btn-navegacao btn-cadastrar-produto" onclick="navegarPara('cadastro-produto.html')">
+            <i class="fas fa-box"></i>
+            Cadastrar Produto
         </button>
 
         <!-- Botão Voltar -->
