@@ -109,20 +109,25 @@
             const password = document.getElementById('cadastro-password').value;
 
             // Faz a requisição para o backend
-            const response = await fetch('http://localhost:3000/cadastrar', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, password }),
-            });
+            try {
+                const response = await fetch('http://localhost:3000/cadastrar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                });
 
-            const data = await response.json();
+                const data = await response.json();
 
-            if (data.success) {
-                window.location.href = 'login.html'; // Redireciona para o login
-            } else {
-                document.getElementById('cadastro-message').textContent = data.message;
+                if (data.success) {
+                    window.location.href = 'login.html'; // Redireciona para o login
+                } else {
+                    document.getElementById('cadastro-message').textContent = data.message;
+                }
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                document.getElementById('cadastro-message').textContent = 'Erro ao conectar ao servidor.';
             }
         });
     </script>
