@@ -168,6 +168,7 @@
                 <select class="form-control" id="tipo-movimentacao" required>
                     <option value="entrada">Entrada</option>
                     <option value="saida">Saída</option>
+                    <option value="devolucao">Devolução</option>
                     <option value="todos">Todos</option>
                 </select>
             </div>
@@ -189,7 +190,7 @@
                     <th>Estoque Após Movimentação</th>
                     <th>Data e Hora</th>
                     <th>Tipo</th>
-                    <th>Ações</th> <!-- Coluna para ações (remover) -->
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody id="tabela-movimentacoes"></tbody>
@@ -231,7 +232,7 @@
                     estoquePorProduto[movimentacao.produto] = 0;
                 }
 
-                if (movimentacao.tipo === 'entrada') {
+                if (movimentacao.tipo === 'entrada' || movimentacao.tipo === 'devolucao') {
                     estoquePorProduto[movimentacao.produto] += parseInt(movimentacao.quantidade);
                 } else if (movimentacao.tipo === 'saida') {
                     estoquePorProduto[movimentacao.produto] -= parseInt(movimentacao.quantidade);
@@ -247,6 +248,7 @@
         function carregarMovimentacoes(empresaCodigo, produtoNome, tipo) {
             const entradas = JSON.parse(localStorage.getItem('entradas')) || [];
             const saidas = JSON.parse(localStorage.getItem('saidas')) || [];
+            const devolucoes = JSON.parse(localStorage.getItem('devolucoes')) || [];
             const empresas = JSON.parse(localStorage.getItem('empresas')) || [];
             const tabelaMovimentacoes = document.getElementById('tabela-movimentacoes');
             tabelaMovimentacoes.innerHTML = '';
@@ -257,10 +259,13 @@
                 movimentacoes = entradas.map(entrada => ({ ...entrada, tipo: 'entrada' }));
             } else if (tipo === 'saida') {
                 movimentacoes = saidas.map(saida => ({ ...saida, tipo: 'saida' }));
+            } else if (tipo === 'devolucao') {
+                movimentacoes = devolucoes.map(devolucao => ({ ...devolucao, tipo: 'devolucao' }));
             } else if (tipo === 'todos') {
                 movimentacoes = [
                     ...entradas.map(entrada => ({ ...entrada, tipo: 'entrada' })),
-                    ...saidas.map(saida => ({ ...saida, tipo: 'saida' }))
+                    ...saidas.map(saida => ({ ...saida, tipo: 'saida' })),
+                    ...devolucoes.map(devolucao => ({ ...devolucao, tipo: 'devolucao' }))
                 ];
             }
 
@@ -289,7 +294,7 @@
                     <td>${movimentacao.quantidade}</td>
                     <td>${movimentacao.estoqueAposMovimentacao}</td>
                     <td>${movimentacao.data}</td>
-                    <td>${movimentacao.tipo === 'entrada' ? 'Entrada' : 'Saída'}</td>
+                    <td>${movimentacao.tipo === 'entrada' ? 'Entrada' : movimentacao.tipo === 'saida' ? 'Saída' : 'Devolução'}</td>
                     <td>
                         <button class="btn btn-danger btn-sm" onclick="removerMovimentacao(${index}, '${movimentacao.tipo}')">Remover</button>
                     </td>
@@ -303,12 +308,16 @@
             let movimentacoes = [];
             if (tipo === 'entrada') {
                 movimentacoes = JSON.parse(localStorage.getItem('entradas')) || [];
-                movimentacoes.splice(index, 1); // Remove o item pelo índice
+                movimentacoes.splice(index, 1);
                 localStorage.setItem('entradas', JSON.stringify(movimentacoes));
             } else if (tipo === 'saida') {
                 movimentacoes = JSON.parse(localStorage.getItem('saidas')) || [];
-                movimentacoes.splice(index, 1); // Remove o item pelo índice
+                movimentacoes.splice(index, 1);
                 localStorage.setItem('saidas', JSON.stringify(movimentacoes));
+            } else if (tipo === 'devolucao') {
+                movimentacoes = JSON.parse(localStorage.getItem('devolucoes')) || [];
+                movimentacoes.splice(index, 1);
+                localStorage.setItem('devolucoes', JSON.stringify(movimentacoes));
             }
 
             // Recarrega a tabela de movimentações
