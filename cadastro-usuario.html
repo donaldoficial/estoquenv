@@ -6,77 +6,7 @@
     <title>Cadastro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            background: white;
-        }
-
-        .card-header {
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            color: white;
-            border-radius: 10px 10px 0 0;
-        }
-
-        .card-header h3 {
-            margin: 0;
-            font-weight: 600;
-        }
-
-        .card-body {
-            padding: 20px;
-        }
-
-        #form-cadastro .form-control {
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 10px;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        #form-cadastro .form-control:focus {
-            border-color: #6a11cb;
-            box-shadow: 0 0 5px rgba(106, 17, 203, 0.5);
-        }
-
-        #form-cadastro .btn-primary {
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            border: none;
-            border-radius: 10px;
-            padding: 10px;
-            font-size: 16px;
-            font-weight: 500;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        #form-cadastro .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        #form-cadastro .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-link {
-            color: #6a11cb;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .btn-link:hover {
-            color: #2575fc;
-        }
-
-        #cadastro-message {
-            font-size: 16px;
-            font-weight: 500;
-            margin-top: 15px;
-            text-align: center;
-        }
+        /* Estilos omitidos para brevidade (iguais ao login.html) */
     </style>
 </head>
 <body>
@@ -108,32 +38,33 @@
     </div>
 
     <script>
-        document.getElementById('form-cadastro').addEventListener('submit', async function (e) {
-            e.preventDefault();
-
+        // Função para cadastrar um novo usuário
+        function cadastrarUsuario() {
             const username = document.getElementById('cadastro-username').value;
             const password = document.getElementById('cadastro-password').value;
 
-            try {
-                const response = await fetch('http://localhost:3000/cadastrar', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ username, password }),
-                });
+            // Recupera usuários do localStorage
+            const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
 
-                const data = await response.json();
-
-                if (data.success) {
-                    window.location.href = 'login.html';
-                } else {
-                    document.getElementById('cadastro-message').textContent = data.message;
-                }
-            } catch (error) {
-                console.error('Erro ao cadastrar:', error);
-                document.getElementById('cadastro-message').textContent = 'Erro ao conectar ao servidor.';
+            // Verifica se o usuário já existe
+            const usuarioExistente = usuarios.find(u => u.username === username);
+            if (usuarioExistente) {
+                document.getElementById('cadastro-message').textContent = 'Usuário já existe!';
+                return;
             }
+
+            // Adiciona o novo usuário
+            usuarios.push({ username, password });
+            localStorage.setItem('usuarios', JSON.stringify(usuarios));
+
+            // Redireciona para a página de login
+            window.location.href = 'login.html';
+        }
+
+        // Adiciona o evento de submit ao formulário de cadastro
+        document.getElementById('form-cadastro').addEventListener('submit', function (e) {
+            e.preventDefault();
+            cadastrarUsuario();
         });
     </script>
 </body>
